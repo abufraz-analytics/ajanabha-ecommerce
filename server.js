@@ -12,7 +12,14 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+
+// Static files serve karne ke liye
+app.use(express.static(__dirname));
+
+// Home route: ajnabha.html ko load karne ke liye
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'ajanabha.html'));
+});
 
 // MongoDB Connection
 const mongoURI = process.env.MONGO_URI;
@@ -27,7 +34,7 @@ const Product = mongoose.model('Product', new mongoose.Schema({
     image: String
 }));
 
-// Cloudinary Configuration using environment variables
+// Cloudinary Configuration
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
