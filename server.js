@@ -23,7 +23,15 @@ const checkAdmin = (req, res, next) => req.headers['admin-password'] === process
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/ajanabha.html'));
 app.get('/api/products', async (req, res) => res.json(await Product.find()));
-app.get('/api/orders', checkAdmin, async (req, res) => res.json(await Order.find()));
+
+app.get('/api/orders', checkAdmin, async (req, res) => {
+    const orders = await Order.find();
+    const products = await Product.find();
+    res.json(orders.map(o => {
+        const p = products.find(prod => prod._id.toString() === o.productId);
+        return { ...o._doc, prodName: p ? p.name : 'Deleted', prodImg: p ? p.image : '' };
+    }));
+});
 
 app.post('/api/products', checkAdmin, upload, async (req, res) => {
     await new Product({ name: req.body.name, price: req.body.price, image: req.file.path }).save();
