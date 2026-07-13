@@ -15,8 +15,8 @@
         .search-box { width: 100%; max-width: 600px; }
         .search-box input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
-        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
-        .product-card:hover { transform: translateY(-8px); }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+        .product-card:hover { transform: translateY(-8px); background-color: #f0f9ff; }
         .product-img { width: 100%; height: 220px; object-fit: cover; }
         .product-info { padding: 20px; }
         .buy-btn { width: 100%; padding: 10px; background-color: #0284c7; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
@@ -57,8 +57,8 @@
         function openOrderPage(id) { document.getElementById('selectedProductId').value = id; switchPage('orderPage'); }
         function switchPage(id) { document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         function loadAdminData() {
-            fetch('/api/products').then(r=>r.json()).then(d => document.getElementById('adminProductGrid').innerHTML = d.map(p => `<div style="margin-bottom:10px;"><img src="${p.image}" width="40">${p.name} <button class="btn-del" onclick="deleteProduct('${p._id}')">Delete</button></div>`).join(''));
-            fetch('/api/orders', {headers:{'admin-password':savedPassword}}).then(r=>r.json()).then(d => document.getElementById('adminOrderList').innerHTML = d.map(o => `<div style="margin-bottom:10px;"><img src="${o.prodImg}" width="40"><p>${o.prodName}</p><p>${o.name} - ${o.phone}</p><button class="btn-del" onclick="deleteOrder('${o._id}')">Delete</button></div>`).join(''));
+            fetch('/api/products').then(r=>r.json()).then(d => document.getElementById('adminProductGrid').innerHTML = d.map(p => `<div style="margin-bottom:10px;"><img src="${p.image}" width="50">${p.name} <button class="btn-del" onclick="deleteProduct('${p._id}')">Delete</button></div>`).join(''));
+            fetch('/api/orders', {headers:{'admin-password':savedPassword}}).then(r=>r.json()).then(d => document.getElementById('adminOrderList').innerHTML = d.map(o => `<div style="margin-bottom:15px; border:1px solid #ddd; padding:10px;"><img src="${o.prodImg}" width="60"><p><b>Product:</b> ${o.prodName}</p><p><b>Customer:</b> ${o.name} (${o.phone})</p><p><b>Address:</b> ${o.address}</p><button class="btn-del" onclick="deleteOrder('${o._id}')">Delete Order</button></div>`).join(''));
         }
         function placeOrder() { fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({productId: document.getElementById('selectedProductId').value, name: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value})}).then(()=>{alert("Order Success!"); switchPage('shopPage');}); }
         function deleteProduct(id) { fetch(`/api/products/${id}`, {method:'DELETE', headers:{'admin-password':savedPassword}}).then(()=>loadAdminData()); }
