@@ -2,29 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AJANABHA | Clean Store</title>
+    <title>AJANABHA | Store</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #f8fafc; color: #1e293b; padding-bottom: 60px; }
-        nav { background: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #e2e8f0; }
-        .logo { font-size: 24px; font-weight: bold; color: #0284c7; cursor: pointer; }
+        /* Navbar background highlight */
+        nav { background: #0284c7; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #0369a1; }
+        .logo { font-size: 24px; font-weight: bold; color: #ffffff; cursor: pointer; }
         .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
         .page-section { display: none; }
         .page-section.active { display: block; }
-        /* Product Cards */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
         .product-card { background: #ffffff; border: 2px solid #e2e8f0; border-radius: 15px; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .product-card:hover { transform: translateY(-10px); border-color: #0284c7; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .product-card:hover { transform: translateY(-10px); border-color: #0284c7; }
         .product-img { width: 100%; height: 220px; object-fit: cover; }
         .product-info { padding: 20px; }
-        .buy-btn { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        .buy-btn:hover { background: #0369a1; }
-        /* Admin Panel */
-        .admin-box { background: #ffffff; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .admin-section { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .buy-btn { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .admin-box { background: #ffffff; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; }
         input, textarea { background: #f8fafc; color: #1e293b; border: 1px solid #cbd5e1; padding: 10px; width: 100%; border-radius: 6px; margin-bottom: 10px; }
         .order-card { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #0284c7; }
-        .btn-del { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .btn-del { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -34,20 +31,22 @@
     </nav>
     <div class="container">
         <div id="shopPage" class="page-section active">
-            <div style="margin-bottom:30px;"><input type="text" id="searchInput" oninput="filterProducts()" placeholder="🔍 Search products..."></div>
+            <input type="text" id="searchInput" oninput="filterProducts()" placeholder="🔍 Search products..." style="margin-bottom:30px;">
             <div id="productGridDisplay" class="product-grid"></div>
         </div>
         <div id="orderPage" class="page-section">
+            <button onclick="switchPage('shopPage')" style="margin-bottom:15px; padding:5px 10px; cursor:pointer;">← Back</button>
             <h2 style="margin-bottom:20px;">Customer Details</h2>
             <input type="hidden" id="selectedProductId">
-            <input type="text" id="custName" placeholder="Name">
-            <input type="text" id="custPhone" placeholder="Phone">
-            <textarea id="custAddress" placeholder="Address"></textarea>
+            <input type="text" id="custName" placeholder="Name (Required)" required>
+            <input type="text" id="custPhone" placeholder="Phone (10 Digits Required)" required>
+            <textarea id="custAddress" placeholder="Address (Required)" required></textarea>
             <button class="buy-btn" onclick="placeOrder()">Confirm Order</button>
         </div>
         <div id="adminDashboard" class="page-section">
-            <div class="admin-section">
-                <div class="admin-box"><h3>Upload Item</h3><input type="text" id="prodName" placeholder="Name"><input type="number" id="prodPrice" placeholder="Price"><input type="file" id="prodImageFile"><button class="buy-btn" onclick="addNewProduct()">Upload Product</button><h3>Inventory</h3><div id="adminProductGrid"></div></div>
+            <button onclick="switchPage('shopPage')" style="margin-bottom:15px; padding:5px 10px; cursor:pointer;">← Back</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div class="admin-box"><h3>Upload Item</h3><input type="text" id="prodName"><input type="number" id="prodPrice"><input type="file" id="prodImageFile"><button class="buy-btn" onclick="addNewProduct()">Upload</button><h3>Inventory</h3><div id="adminProductGrid"></div></div>
                 <div class="admin-box"><h3>Live Orders</h3><div id="adminOrderList"></div></div>
             </div>
         </div>
@@ -56,14 +55,18 @@
         let localProducts = [], savedPassword = "";
         window.onload = () => fetch('/api/products').then(r=>r.json()).then(d=>{localProducts=d; renderProducts(d);});
         window.addEventListener('keydown', (e) => { if(e.ctrlKey && e.shiftKey && e.key === '*') { const p = prompt("Password:"); fetch('/api/products', {headers:{'admin-password':p}}).then(res=>{ if(res.status===200){ savedPassword=p; document.getElementById('adminToggleBtn').style.display="block"; alert("Access Granted"); }}); }});
-        function renderProducts(p) { document.getElementById('productGridDisplay').innerHTML = p.map(prod => `<div class="product-card"><img src="${prod.image}" class="product-img"><div class="product-info"><p style="font-size:18px; font-weight:bold;">${prod.name}</p><p style="color:#0284c7; margin:5px 0;">₹${prod.price}</p><button class="buy-btn" onclick="openOrderPage('${prod._id}')">Buy Now</button></div></div>`).join(''); }
+        function renderProducts(p) { document.getElementById('productGridDisplay').innerHTML = p.map(prod => `<div class="product-card"><img src="${prod.image}" class="product-img"><div class="product-info"><p style="font-weight:bold;">${prod.name}</p><p style="color:#0284c7;">₹${prod.price}</p><button class="buy-btn" onclick="openOrderPage('${prod._id}')">Buy Now</button></div></div>`).join(''); }
         function openOrderPage(id) { document.getElementById('selectedProductId').value = id; switchPage('orderPage'); }
-        function switchPage(id) { document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-        function loadAdminData() {
-            fetch('/api/products').then(r=>r.json()).then(d => document.getElementById('adminProductGrid').innerHTML = d.map(p => `<div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><img src="${p.image}" width="50" style="border-radius:5px;">${p.name} <button class="btn-del" onclick="deleteProduct('${p._id}')">Delete</button></div>`).join(''));
-            fetch('/api/orders', {headers:{'admin-password':savedPassword}}).then(r=>r.json()).then(d => document.getElementById('adminOrderList').innerHTML = d.map(o => `<div class="order-card"><img src="${o.prodImg}" width="60" style="border-radius:5px;"><p><b>${o.prodName}</b></p><p>Customer: ${o.name} - ${o.phone}</p><p>Address: ${o.address}</p><button class="btn-del" onclick="deleteOrder('${o._id}')">Delete</button></div>`).join(''));
+        function switchPage(id) { document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id==='adminDashboard') loadAdminData(); }
+        function placeOrder() {
+            const n = document.getElementById('custName').value, ph = document.getElementById('custPhone').value, a = document.getElementById('custAddress').value;
+            if(!n || !a || ph.length !== 10) return alert("Warning: Please enter valid Name, Address and a 10-digit Phone Number.");
+            fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({productId: document.getElementById('selectedProductId').value, name: n, phone: ph, address: a})}).then(()=>{alert("Order Success!"); switchPage('shopPage');});
         }
-        function placeOrder() { fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({productId: document.getElementById('selectedProductId').value, name: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value})}).then(()=>{alert("Order Success!"); switchPage('shopPage');}); }
+        function loadAdminData() {
+            fetch('/api/products').then(r=>r.json()).then(d => document.getElementById('adminProductGrid').innerHTML = d.map(p => `<div style="margin-bottom:10px;"><img src="${p.image}" width="50">${p.name} <button class="btn-del" onclick="deleteProduct('${p._id}')">Delete</button></div>`).join(''));
+            fetch('/api/orders', {headers:{'admin-password':savedPassword}}).then(r=>r.json()).then(d => document.getElementById('adminOrderList').innerHTML = d.map(o => `<div class="order-card"><img src="${o.prodImg}" width="50"><p>${o.prodName}</p><p>${o.name} - ${o.phone}</p><p>${o.address}</p><button class="btn-del" onclick="deleteOrder('${o._id}')">Delete</button></div>`).join(''));
+        }
         function deleteProduct(id) { fetch(`/api/products/${id}`, {method:'DELETE', headers:{'admin-password':savedPassword}}).then(()=>loadAdminData()); }
         function deleteOrder(id) { fetch(`/api/orders/${id}`, {method:'DELETE', headers:{'admin-password':savedPassword}}).then(()=>loadAdminData()); }
         function addNewProduct() { const f = new FormData(); f.append('name', document.getElementById('prodName').value); f.append('price', document.getElementById('prodPrice').value); f.append('productImage', document.getElementById('prodImageFile').files[0]); fetch('/api/products', {method:'POST', headers:{'admin-password':savedPassword}, body:f}).then(()=>loadAdminData()); }
