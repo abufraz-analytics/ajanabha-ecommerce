@@ -18,12 +18,14 @@
         .product-img { width: 100%; height: 180px; object-fit: cover; cursor: pointer; transition: 0.3s; }
         .product-info { padding: 15px; }
         .buy-btn { width: 100%; padding: 10px; background: #0284c7; color: white; border: none; border-radius: 8px; cursor: pointer; }
-        /* Form Styling */
+        .admin-box { background: #ffffff; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .btn-del { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-top: 5px; }
         .form-group { margin-bottom: 20px; }
         .form-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #475569; }
         input, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
         .modal img { max-width: 90%; max-height: 80%; border-radius: 10px; }
+        @media (max-width: 600px) { .admin-section { grid-template-columns: 1fr !important; } }
     </style>
 </head>
 <body>
@@ -47,12 +49,18 @@
         </div>
         <div id="adminDashboard" class="page-section">
             <button onclick="switchPage('shopPage')" style="margin-bottom:15px; padding:5px 10px; cursor:pointer;">← Back</button>
-            <div class="admin-box" style="background:#fff; padding:15px; border-radius:15px;">
+            <div class="admin-box">
                 <h3>Upload Item</h3>
                 <input type="text" id="prodName" placeholder="Item Name">
                 <input type="number" id="prodPrice" placeholder="Item Price">
                 <input type="file" id="prodImageFile">
                 <button class="buy-btn" onclick="addNewProduct()">Upload</button>
+                <h3 style="margin-top:20px;">Inventory</h3>
+                <div id="adminProductGrid"></div>
+            </div>
+            <div class="admin-box">
+                <h3>Live Orders</h3>
+                <div id="adminOrderList"></div>
             </div>
         </div>
     </div>
@@ -64,13 +72,23 @@
         function renderProducts(p) { document.getElementById('productGridDisplay').innerHTML = p.map(prod => `<div class="product-card"><img src="${prod.image}" class="product-img" onclick="showImage('${prod.image}')"><div class="product-info"><p style="font-weight:bold;">${prod.name}</p><p style="color:#0284c7;">₹${prod.price}</p><button class="buy-btn" onclick="openOrderPage('${prod._id}')">Buy Now</button></div></div>`).join(''); }
         function showImage(src) { document.getElementById('modalImg').src = src; document.getElementById('imageModal').style.display = 'flex'; }
         function openOrderPage(id) { document.getElementById('selectedProductId').value = id; switchPage('orderPage'); }
-        function switchPage(id) { document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function switchPage(id) { 
+            document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); 
+            document.getElementById(id).classList.add('active'); 
+            if(id === 'adminDashboard') loadAdminData(); 
+        }
         function placeOrder() {
             const n = document.getElementById('custName').value, ph = document.getElementById('custPhone').value, a = document.getElementById('custAddress').value;
             if(!n || !a || ph.length !== 10) return alert("Warning: Please enter valid Name, Address and a 10-digit Phone Number.");
             fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({productId: document.getElementById('selectedProductId').value, name: n, phone: ph, address: a})}).then(()=>{alert("Order Success!"); switchPage('shopPage');});
         }
-        function addNewProduct() { const f = new FormData(); f.append('name', document.getElementById('prodName').value); f.append('price', document.getElementById('prodPrice').value); f.append('productImage', document.getElementById('prodImageFile').files[0]); fetch('/api/products', {method:'POST', headers:{'admin-password':savedPassword}, body:f}).then(()=>alert("Uploaded!")); }
+        function loadAdminData() {
+            fetch('/api/products').then(r=>r.json()).then(d => document.getElementById('adminProductGrid').innerHTML = d.map(p => `<div style="margin-top:10px;"><img src="${p.image}" width="40">${p.name} <button class="btn-del" onclick="deleteProduct('${p._id}')">Delete</button></div>`).join(''));
+            fetch('/api/orders', {headers:{'admin-password':savedPassword}}).then(r=>r.json()).then(d => document.getElementById('adminOrderList').innerHTML = d.map(o => `<div style="background:#f1f5f9; padding:10px; margin-top:10px; border-radius:5px;"><p><b>Product:</b> ${o.prodName}</p><p><b>Name:</b> ${o.name}</p><p><b>Phone:</b> ${o.phone}</p><p><b>Addr:</b> ${o.address}</p><button class="btn-del" onclick="deleteOrder('${o._id}')">Delete Order</button></div>`).join(''));
+        }
+        function deleteProduct(id) { fetch(`/api/products/${id}`, {method:'DELETE', headers:{'admin-password':savedPassword}}).then(()=>loadAdminData()); }
+        function deleteOrder(id) { fetch(`/api/orders/${id}`, {method:'DELETE', headers:{'admin-password':savedPassword}}).then(()=>loadAdminData()); }
+        function addNewProduct() { const f = new FormData(); f.append('name', document.getElementById('prodName').value); f.append('price', document.getElementById('prodPrice').value); f.append('productImage', document.getElementById('prodImageFile').files[0]); fetch('/api/products', {method:'POST', headers:{'admin-password':savedPassword}, body:f}).then(()=>loadAdminData()); }
         function filterProducts() { const q = document.getElementById('searchInput').value.toLowerCase(); renderProducts(localProducts.filter(p => p.name.toLowerCase().includes(q))); }
     </script>
 </body>
