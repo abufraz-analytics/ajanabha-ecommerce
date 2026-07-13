@@ -12,7 +12,6 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 mongoose.connect(process.env.MONGO_URI);
-
 const Product = mongoose.model('Product', new mongoose.Schema({ name: String, price: Number, image: String }));
 const Order = mongoose.model('Order', new mongoose.Schema({ productId: String, name: String, phone: String, address: String }));
 
@@ -29,7 +28,7 @@ app.get('/api/orders', checkAdmin, async (req, res) => {
     const products = await Product.find();
     res.json(orders.map(o => {
         const p = products.find(prod => prod._id.toString() === o.productId);
-        return { ...o._doc, prodName: p ? p.name : 'Deleted', prodImg: p ? p.image : '' };
+        return { ...o._doc, prodName: p ? p.name : 'Deleted Item', prodImg: p ? p.image : '' };
     }));
 });
 
