@@ -6,9 +6,9 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #f8fafc; color: #1e293b; padding-bottom: 60px; }
-        /* Navbar background highlight */
-        nav { background: #0284c7; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #0369a1; }
-        .logo { font-size: 24px; font-weight: bold; color: #ffffff; cursor: pointer; }
+        /* Navbar exact update */
+        nav { background: #0f172a; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid #38bdf8; }
+        .logo { font-size: 24px; font-weight: bold; color: #38bdf8; cursor: pointer; }
         .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
         .page-section { display: none; }
         .page-section.active { display: block; }
@@ -27,7 +27,7 @@
 <body>
     <nav>
         <div class="logo" onclick="switchPage('shopPage')">AJANABHA</div>
-        <button id="adminToggleBtn" style="display:none; padding:8px 15px; cursor:pointer;" onclick="switchPage('adminDashboard')">Admin Dashboard</button>
+        <button id="adminToggleBtn" style="display:none; padding:8px 15px; cursor:pointer; background: transparent; color: #38bdf8; border: 1px solid #38bdf8; border-radius: 4px;" onclick="switchPage('adminDashboard')">Admin Panel</button>
     </nav>
     <div class="container">
         <div id="shopPage" class="page-section active">
@@ -46,7 +46,15 @@
         <div id="adminDashboard" class="page-section">
             <button onclick="switchPage('shopPage')" style="margin-bottom:15px; padding:5px 10px; cursor:pointer;">← Back</button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                <div class="admin-box"><h3>Upload Item</h3><input type="text" id="prodName"><input type="number" id="prodPrice"><input type="file" id="prodImageFile"><button class="buy-btn" onclick="addNewProduct()">Upload</button><h3>Inventory</h3><div id="adminProductGrid"></div></div>
+                <div class="admin-box">
+                    <h3>Upload Item</h3>
+                    <input type="text" id="prodName" placeholder="Item Name">
+                    <input type="number" id="prodPrice" placeholder="Item Price">
+                    <input type="file" id="prodImageFile">
+                    <button class="buy-btn" onclick="addNewProduct()">Upload</button>
+                    <h3>Inventory</h3>
+                    <div id="adminProductGrid"></div>
+                </div>
                 <div class="admin-box"><h3>Live Orders</h3><div id="adminOrderList"></div></div>
             </div>
         </div>
@@ -54,7 +62,7 @@
     <script>
         let localProducts = [], savedPassword = "";
         window.onload = () => fetch('/api/products').then(r=>r.json()).then(d=>{localProducts=d; renderProducts(d);});
-        window.addEventListener('keydown', (e) => { if(e.ctrlKey && e.shiftKey && e.key === '*') { const p = prompt("Password:"); fetch('/api/products', {headers:{'admin-password':p}}).then(res=>{ if(res.status===200){ savedPassword=p; document.getElementById('adminToggleBtn').style.display="block"; alert("Access Granted"); }}); }});
+        window.addEventListener('keydown', (e) => { if(e.ctrlKey && e.shiftKey && e.key === '*') { const p = prompt("Password:"); fetch('/api/products', {headers:{'admin-password':p}}).then(res=>{ if(res.status===200){ savedPassword=p; document.getElementById('adminToggleBtn').style.display="block"; alert("Admin Panel Access Granted"); }}); }});
         function renderProducts(p) { document.getElementById('productGridDisplay').innerHTML = p.map(prod => `<div class="product-card"><img src="${prod.image}" class="product-img"><div class="product-info"><p style="font-weight:bold;">${prod.name}</p><p style="color:#0284c7;">₹${prod.price}</p><button class="buy-btn" onclick="openOrderPage('${prod._id}')">Buy Now</button></div></div>`).join(''); }
         function openOrderPage(id) { document.getElementById('selectedProductId').value = id; switchPage('orderPage'); }
         function switchPage(id) { document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id==='adminDashboard') loadAdminData(); }
