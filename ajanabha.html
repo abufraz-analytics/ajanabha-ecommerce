@@ -2,119 +2,109 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajanabha E-Commerce</title>
+    <title>Ajanabha Admin Dashboard</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; padding-bottom: 60px; }
-        nav { background-color: #0f172a; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        nav .logo { font-size: 24px; font-weight: bold; letter-spacing: 1.5px; color: #38bdf8; text-transform: uppercase; cursor: pointer; user-select: none; }
-        nav .nav-links button { background: none; border: 1px solid #38bdf8; color: #38bdf8; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: none; }
-        nav .nav-links button:hover { background-color: #38bdf8; color: #0f172a; }
-        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-        .page-section { display: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f8fafc; padding-bottom: 50px; }
+        nav { background: #0f172a; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .page-section { display: none; padding: 20px; }
         .page-section.active { display: block; }
-        .search-wrapper { margin-bottom: 30px; display: flex; justify-content: center; }
-        .search-box { width: 100%; max-width: 600px; display: flex; gap: 10px; }
-        .search-box input { width: 100%; padding: 12px 18px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; outline: none; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
-        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; }
-        .product-img { width: 100%; height: 220px; object-fit: cover; background-color: #e2e8f0; }
-        .product-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
-        .product-name { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-        .product-price { font-size: 20px; color: #0284c7; font-weight: 700; margin-bottom: 15px; }
-        .buy-btn { width: 100%; padding: 10px; background-color: #0284c7; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        .admin-delete-btn { width: 100%; padding: 6px; background-color: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 8px; }
-        .form-card { background: white; padding: 30px; border-radius: 12px; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto; }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-        .submit-btn { width: 100%; padding: 12px; background-color: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        .back-link { display: inline-block; margin-bottom: 20px; color: #0284c7; cursor: pointer; }
-        .logout-indicator { display: none; background-color: #fee2e2; padding: 8px; margin-bottom: 20px; text-align: center; cursor: pointer; }
+        .container { max-width: 1000px; margin: auto; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .product-card { background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .del-btn { background: #ef4444; }
+        .submit-btn { background: #10b981; width: 100%; margin-top: 10px; }
+        .form-group { margin-bottom: 15px; }
+        input, textarea { width: 100%; padding: 8px; }
     </style>
 </head>
 <body>
     <nav>
-        <div class="logo" onclick="switchPage('shopPage')">Ajanabha</div>
-        <div class="nav-links"><button id="adminToggleBtn" onclick="switchPage('uploadPage')">Admin Panel</button></div>
+        <div class="logo" onclick="switchPage('shopPage')">AJANABHA</div>
+        <button id="adminToggleBtn" onclick="switchPage('adminDashboard')" style="display:none;">Admin Dashboard</button>
     </nav>
-    <div class="container">
-        <div id="adminBadge" class="logout-indicator" onclick="logoutAdmin()">Logged in as Admin. Logout?</div>
-        
-        <div id="shopPage" class="page-section active">
-            <div class="search-wrapper"><div class="search-box"><input type="text" id="searchInput" oninput="filterProducts()" placeholder="Search..."></div></div>
-            <div class="product-grid" id="productGridDisplay"></div>
-        </div>
 
-        <div id="uploadPage" class="page-section">
-            <a class="back-link" onclick="switchPage('shopPage')">← Back</a>
-            <div class="form-card">
-                <h2>Upload Product</h2>
-                <div class="form-group"><label>Name</label><input type="text" id="prodName"></div>
-                <div class="form-group"><label>Price</label><input type="number" id="prodPrice"></div>
-                <div class="form-group"><label>Image</label><input type="file" id="prodImageFile"></div>
-                <button class="submit-btn" onclick="addNewProduct()">Upload</button>
-            </div>
+    <div class="container">
+        <div id="shopPage" class="page-section active">
+            <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Search Products...">
+            <div id="productGridDisplay" class="product-grid" style="margin-top:20px;"></div>
         </div>
 
         <div id="orderPage" class="page-section">
-            <a class="back-link" onclick="switchPage('shopPage')">← Back</a>
-            <div class="form-card">
-                <h2>Complete Order</h2>
-                <input type="hidden" id="selectedProductId">
-                <div class="form-group"><label>Name</label><input type="text" id="custName"></div>
-                <div class="form-group"><label>Phone</label><input type="text" id="custPhone"></div>
-                <div class="form-group"><label>Address</label><textarea id="custAddress"></textarea></div>
-                <button class="submit-btn" onclick="placeOrder()">Confirm Order</button>
+            <h2>Place Order</h2>
+            <input type="hidden" id="selectedProductId">
+            <div class="form-group"><input type="text" id="custName" placeholder="Name"></div>
+            <div class="form-group"><input type="text" id="custPhone" placeholder="Phone"></div>
+            <div class="form-group"><textarea id="custAddress" placeholder="Address"></textarea></div>
+            <button class="btn submit-btn" onclick="placeOrder()">Confirm Order</button>
+        </div>
+
+        <div id="adminDashboard" class="page-section">
+            <h2>Admin Dashboard</h2>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h3>Upload</h3>
+                    <input type="text" id="prodName" placeholder="Name"><br>
+                    <input type="number" id="prodPrice" placeholder="Price"><br>
+                    <input type="file" id="prodImageFile"><br>
+                    <button class="btn submit-btn" onclick="addNewProduct()">Upload</button>
+                    <h3>Products</h3>
+                    <div id="adminProductGrid"></div>
+                </div>
+                <div>
+                    <h3>Orders</h3>
+                    <div id="adminOrderList"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let localProducts = [];
-        let isAdminLoggedIn = false;
-        let savedPassword = "";
-
+        let localProducts = [], isAdminLoggedIn = false, savedPassword = "";
         window.onload = () => fetch('/api/products').then(r=>r.json()).then(d=>{localProducts=d; renderProducts(d);});
-
+        
         window.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.shiftKey && e.key === '*') {
-                const pass = prompt("Admin Password:");
-                if(pass) fetch('/api/products', {headers: {'admin-password': pass}}).then(res=>{if(res.status===200){isAdminLoggedIn=true; savedPassword=pass; document.getElementById('adminToggleBtn').style.display="block"; document.getElementById('adminBadge').style.display="block"; renderProducts(localProducts);}});
+                const pass = prompt("Password:");
+                fetch('/api/products', {headers:{'admin-password':pass}}).then(res=>{
+                    if(res.status===200){isAdminLoggedIn=true; savedPassword=pass; document.getElementById('adminToggleBtn').style.display="block"; switchPage('adminDashboard'); loadAdminData();}
+                });
             }
         });
 
-        function renderProducts(products) {
-            const grid = document.getElementById('productGridDisplay');
-            grid.innerHTML = "";
-            products.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `<img class="product-img" src="${p.image}">
-                    <div class="product-info"><div class="product-name">${p.name}</div>
-                    <div class="product-price">₹${p.price}</div>
-                    <button class="buy-btn" onclick="openOrderPage('${p._id}')">Buy Now</button>
-                    ${isAdminLoggedIn ? `<button class="admin-delete-btn" onclick="deleteProduct('${p._id}')">Delete</button>` : ''}</div>`;
-                grid.appendChild(card);
+        function renderProducts(p) {
+            document.getElementById('productGridDisplay').innerHTML = p.map(prod => `
+                <div class="product-card">
+                    <img src="${prod.image}" style="width:100%; height:150px; object-fit:cover;">
+                    <p>${prod.name}</p>
+                    <p>₹${prod.price}</p>
+                    <button class="btn" style="background:#0284c7; width:100%" onclick="openOrderPage('${prod._id}')">Buy Now</button>
+                </div>
+            `).join('');
+        }
+
+        function loadAdminData() {
+            fetch('/api/products').then(r=>r.json()).then(d => {
+                document.getElementById('adminProductGrid').innerHTML = d.map(p => `
+                    <div class="product-card">${p.name} <button class="btn del-btn" onclick="deleteProduct('${p._id}')">Delete</button></div>
+                `).join('');
+            });
+            fetch('/api/orders', {headers:{'admin-password':savedPassword}}).then(r=>r.json()).then(d => {
+                document.getElementById('adminOrderList').innerHTML = d.map(o => `
+                    <div class="product-card">${o.name} - ${o.phone} <button class="btn del-btn" onclick="deleteOrder('${o._id}')">Delete</button></div>
+                `).join('');
             });
         }
 
         function openOrderPage(id) { document.getElementById('selectedProductId').value = id; switchPage('orderPage'); }
-
+        function switchPage(id) { document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function deleteProduct(id) { fetch(`/api/products/${id}`, {method:'DELETE', headers:{'admin-password':savedPassword}}).then(()=>loadAdminData()); }
+        function deleteOrder(id) { fetch(`/api/orders/${id}`, {method:'DELETE', headers:{'admin-password':savedPassword}}).then(()=>loadAdminData()); }
         function placeOrder() {
-            fetch('/api/orders', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({productId: document.getElementById('selectedProductId').value, name: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value})
-            }).then(() => { alert("Order Placed!"); switchPage('shopPage'); });
+            fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({productId: document.getElementById('selectedProductId').value, name: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value})}).then(()=>{alert("Done!"); switchPage('shopPage');});
         }
-
-        function switchPage(id) { document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-        function logoutAdmin() { isAdminLoggedIn = false; location.reload(); }
-        function filterProducts() { const q = document.getElementById('searchInput').value.toLowerCase(); renderProducts(localProducts.filter(p => p.name.toLowerCase().includes(q))); }
-        function deleteProduct(id) { fetch(`/api/products/${id}`, {method:'DELETE', headers:{'admin-password': savedPassword}}).then(() => location.reload()); }
-        function addNewProduct() { /* ...Existing upload logic... */ alert("Check server logic for POST"); }
+        function addNewProduct() { const f = new FormData(); f.append('name', document.getElementById('prodName').value); f.append('price', document.getElementById('prodPrice').value); f.append('productImage', document.getElementById('prodImageFile').files[0]); fetch('/api/products', {method:'POST', headers:{'admin-password':savedPassword}, body:f}).then(()=>loadAdminData()); }
     </script>
 </body>
 </html>
