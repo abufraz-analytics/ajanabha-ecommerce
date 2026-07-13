@@ -22,7 +22,6 @@ const checkAdmin = (req, res, next) => req.headers['admin-password'] === process
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/ajanabha.html'));
 app.get('/api/products', async (req, res) => res.json(await Product.find()));
-
 app.get('/api/orders', checkAdmin, async (req, res) => {
     const orders = await Order.find();
     const products = await Product.find();
@@ -31,14 +30,11 @@ app.get('/api/orders', checkAdmin, async (req, res) => {
         return { ...o._doc, prodName: p ? p.name : 'Deleted Item', prodImg: p ? p.image : '' };
     }));
 });
-
 app.post('/api/products', checkAdmin, upload, async (req, res) => {
     await new Product({ name: req.body.name, price: req.body.price, image: req.file.path }).save();
     res.json({ message: "Success" });
 });
-
 app.post('/api/orders', async (req, res) => { await new Order(req.body).save(); res.json({ message: "Success" }); });
-
 app.delete('/api/products/:id', checkAdmin, async (req, res) => {
     const p = await Product.findById(req.params.id);
     if(p && p.image) {
@@ -48,7 +44,5 @@ app.delete('/api/products/:id', checkAdmin, async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
     res.json({message: "Success"});
 });
-
 app.delete('/api/orders/:id', checkAdmin, async (req, res) => { await Order.findByIdAndDelete(req.params.id); res.json({message: "Success"}); });
-
 app.listen(process.env.PORT || 5000, () => console.log('Server Live'));
